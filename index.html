@@ -72,8 +72,10 @@
   .reveal .pull{margin-top:14px;}
 
   /* ---- Shared task styles ---- */
-  .stim-wrap{height:128px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:16px;}
-  .stim svg{width:74px;height:74px;color:var(--ink);}
+  .stim-wrap{height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:16px;}
+  .stim-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;object-position:top center;border:3px solid var(--line);display:block;}
+  .stim-name{font-size:15px;font-weight:600;color:var(--ink);text-align:center;opacity:0;transition:opacity .3s ease;pointer-events:none;}
+  .stim-name.reveal-name{opacity:1;}
   .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
   .opt{font-family:var(--font-sans);font-size:20px;font-weight:500;padding:16px 0;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:12px;color:var(--ink);transition:background .12s ease,border-color .12s ease;}
   .opt:hover:not(:disabled){border-color:#C7CBD2;}
@@ -214,11 +216,11 @@
     <div class="wrap">
       <p class="eyebrow">03 · Learn it</p>
       <h2 tabindex="-1">Figure out the pattern</h2>
-      <p>You're about to see four symbols, one at a time. Each symbol has exactly one correct button — 1, 2, 3, or 4. You won't be told which is which upfront: <strong>you'll work it out by trying</strong>. When you press the wrong button, the right one lights up green so you can learn from it.</p>
-      <p class="muted" style="font-size:15px;margin-bottom:20px;">Your only job: <strong>learn and remember</strong> all four pairings. We'll come back to them later.</p>
+      <p>You're about to see four faces, one at a time. Each face has exactly one correct button — 1, 2, 3, or 4. You won't be told which is which upfront: <strong>you'll work it out by trying</strong>. When you press the wrong button, the right one lights up green so you can learn from it.</p>
+      <p class="muted" style="font-size:15px;margin-bottom:20px;">Your only job: <strong>learn and remember</strong> which button belongs to which face. We'll come back to them later.</p>
 
       <div class="task" id="learnTask">
-        <div class="stim-wrap"><span class="stim" id="learnStim" aria-live="polite"></span></div>
+        <div class="stim-wrap"><span class="stim" id="learnStim" aria-live="polite"></span><span class="stim-name" id="learnName"></span></div>
         <div class="opts" id="learnOpts" role="group" aria-label="Answer buttons">
           <button class="opt" data-i="0" disabled>1</button>
           <button class="opt" data-i="1" disabled>2</button>
@@ -257,10 +259,10 @@
     <div class="wrap">
       <p class="eyebrow">05 · Did it stick?</p>
       <h2 tabindex="-1">One more thing before we finish.</h2>
-      <p>A few minutes ago you saw four symbols you'd never seen before. Let's find out what your brain did with them while you were reading.</p>
+      <p>A few minutes ago you saw four faces you'd never seen before. Let's find out what your brain did with them while you were reading.</p>
 
       <div class="task" id="recallTask">
-        <div class="stim-wrap"><span class="stim" id="recallStim" aria-live="polite"></span></div>
+        <div class="stim-wrap"><span class="stim" id="recallStim" aria-live="polite"></span><span class="stim-name" id="recallName"></span></div>
         <div class="opts" id="recallOpts" role="group" aria-label="Answer buttons">
           <button class="opt" data-i="0" disabled>1</button>
           <button class="opt" data-i="1" disabled>2</button>
@@ -275,8 +277,9 @@
 
       <div class="recall-reveal" id="recallReveal" aria-live="polite">
         <div id="recallStats"></div>
-        <p class="pull" style="margin-bottom:20px;">A few minutes ago those four pairings were random noise. Now — without anyone telling you the answers — you just knew. Your brain rewrote itself while you were reading about something else. That is not a metaphor. That is what this course is about.</p>
-        <p style="margin:0;" class="muted" style="font-size:15px;">This is the taxi drivers' three years, compressed into ten minutes. And just like theirs, it will quietly fade if you never revisit it.</p>
+        <p class="pull" style="margin-bottom:20px;">A few minutes ago those four faces were strangers. Now — without anyone telling you the answers — you just knew which button was whose. Your brain rewrote itself while you were reading about something else. That is not a metaphor. That is what this course is about.</p>
+        <div id="recallNameReveal" style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:22px 0;"></div>
+        <p style="margin:0;" class="muted">This is the taxi drivers' three years, compressed into ten minutes. And just like theirs, it will quietly fade if you never revisit it.</p>
       </div>
     </div>
   </section>
@@ -392,14 +395,18 @@
   });
 
   /* ---- Shared task logic ---- */
-  /* Symbol SVGs and the correct mapping (symbol index → button index) */
-  var SYM = {
-    0:'<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7"><circle cx="50" cy="50" r="34"/></svg>',
-    1:'<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><rect x="20" y="20" width="60" height="60" rx="4"/></svg>',
-    2:'<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><polygon points="50,18 82,78 18,78"/></svg>',
-    3:'<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><polygon points="50,16 84,50 50,84 16,50"/></svg>'
-  };
-  var MAP = {0:2, 1:0, 2:3, 3:1}; /* symbol → correct button index */
+  /* Staff photos and names. Index → { src, name }. MAP: face index → correct button index */
+  var FACES = [
+    { src: 'bart_2.png',    name: 'Bart'    },
+    { src: 'gina_2.png',    name: 'Gina'    },
+    { src: 'tash_2.png',    name: 'Tash'    },
+    { src: 'frankie_2.png', name: 'Frankie' }
+  ];
+  var MAP = {0:2, 1:0, 2:3, 3:1}; /* face index → correct button index */
+
+  function makeFaceHTML(faceIdx){
+    return '<img class="stim-photo" src="' + FACES[faceIdx].src + '" alt="A face" draggable="false">';
+  }
 
   function shuffle(arr){
     for(var i = arr.length - 1; i > 0; i--){
@@ -424,7 +431,9 @@
 
     function showTrial(){
       var s = state.trials[state.idx];
-      cfg.stimEl.innerHTML = SYM[s];
+      cfg.stimEl.innerHTML = makeFaceHTML(s);
+      /* hide name during active task — only shown in recall reveal */
+      if(cfg.nameEl){ cfg.nameEl.textContent = ''; cfg.nameEl.classList.remove('reveal-name'); }
       cfg.optEls.forEach(function(b){ b.disabled = false; b.className = 'opt'; });
       cfg.statusEl.textContent = 'Trial ' + (state.idx + 1) + ' of ' + state.trials.length;
       state.t0 = performance.now();
@@ -451,9 +460,9 @@
 
     function finish(){
       state.running = false;
-      cfg.stimEl.innerHTML = '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><polyline points="26,52 44,70 76,32"/></svg>';
+      cfg.stimEl.innerHTML = '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="width:74px;height:74px;color:var(--grow)"><polyline points="26,52 44,70 76,32"/></svg>';
       cfg.statusEl.textContent = 'Done.';
-      cfg.onFinish(state.results);
+      cfg.onFinish(state.results, state.trials);
     }
 
     cfg.startBtn.addEventListener('click', function(){
@@ -481,6 +490,7 @@
 
   var learnTask = makeTask({
     stimEl:    document.getElementById('learnStim'),
+    nameEl:    document.getElementById('learnName'),
     optEls:    Array.prototype.slice.call(document.querySelectorAll('#learnOpts .opt')),
     statusEl:  document.getElementById('learnStatus'),
     startBtn:  document.getElementById('learnStart'),
@@ -499,6 +509,7 @@
   /* ---- Phase 2: RECALL ---- */
   var recallTask = makeTask({
     stimEl:    document.getElementById('recallStim'),
+    nameEl:    document.getElementById('recallName'),
     optEls:    Array.prototype.slice.call(document.querySelectorAll('#recallOpts .opt')),
     statusEl:  document.getElementById('recallStatus'),
     startBtn:  document.getElementById('recallStart'),
@@ -525,8 +536,21 @@
         + '<div class="compare-cell highlight"><p class="phase-label">After a break</p><p class="k">Accuracy</p><p class="v">' + p2Acc + '%</p></div>'
         + '</div>'
         + (fasterPct > 0
-            ? '<p style="font-size:15px;margin-bottom:0;" class="muted">You were <strong>' + fasterPct + '% faster</strong> from the very first trial of the recall round — before you had time to re-learn anything.</p>'
-            : '<p style="font-size:15px;margin-bottom:0;" class="muted">Your speed and accuracy held steady across the gap — the learning carried over.</p>');
+            ? '<p style="font-size:15px;margin-bottom:18px;" class="muted">You were <strong>' + fasterPct + '% faster</strong> from the very first trial of the recall round — before you had time to re-learn anything.</p>'
+            : '<p style="font-size:15px;margin-bottom:18px;" class="muted">Your speed and accuracy held steady across the gap — the learning carried over.</p>');
+
+      /* Reveal name labels: show all four faces + their button numbers */
+      var revealEl = document.getElementById('recallNameReveal');
+      revealEl.innerHTML = '';
+      FACES.forEach(function(f, idx){
+        var btn = MAP[idx] + 1; /* 1-based */
+        var card = document.createElement('div');
+        card.style.cssText = 'text-align:center;';
+        card.innerHTML = '<img src="' + f.src + '" style="width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:top center;border:2px solid var(--line);display:block;margin:0 auto 6px;">'
+          + '<span style="font-size:13px;font-weight:600;color:var(--ink);">' + f.name + '</span>'
+          + '<span style="font-size:12px;color:var(--muted);display:block;">button ' + btn + '</span>';
+        revealEl.appendChild(card);
+      });
 
       document.getElementById('recallReveal').classList.add('show');
       recallDone = true;
