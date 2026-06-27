@@ -82,7 +82,9 @@
   .opt:disabled{cursor:default;}
   .opt.correct{background:var(--grow-soft);border-color:var(--grow);color:var(--grow);}
   .opt.wrong{background:#FBE9E4;border-color:var(--spark);color:var(--spark-deep);}
-  .task-status{font-size:14px;color:var(--muted);min-height:20px;margin:0 0 14px;}
+  .task-status{font-size:14px;color:var(--muted);min-height:20px;margin:0 0 6px;}
+  .accuracy-counter{font-size:13px;font-weight:600;min-height:18px;margin:0 0 10px;color:var(--muted);transition:color .3s ease;}
+  .accuracy-counter.good{color:var(--grow);}
   .bars{display:flex;align-items:flex-end;gap:3px;height:64px;margin:8px 0 4px;}
   .bar{flex:1;min-height:2px;background:var(--spark);border-radius:2px 2px 0 0;transition:height .2s ease;}
   .bar.miss{background:#D9A38F;}
@@ -228,6 +230,7 @@
           <button class="opt" data-i="3" disabled>4</button>
         </div>
         <p class="task-status" id="learnStatus">Press start when you're ready.</p>
+        <p class="accuracy-counter" id="learnAccuracy"></p>
         <p style="margin:0 0 8px;"><button class="btn-primary" id="learnStart">Start</button></p>
         <div class="bars" id="learnBars" aria-hidden="true"></div>
         <p class="bars-label" id="learnBarsLabel" style="visibility:hidden;">response time per trial — shorter is faster</p>
@@ -429,6 +432,15 @@
     var state = { running: false, trials: [], idx: 0, results: [], t0: 0 };
     var MAXRT = 2000;
 
+    function updateAccuracy(){
+      if(!cfg.accuracyEl) return;
+      var done = state.results.length;
+      if(done === 0){ cfg.accuracyEl.textContent = ''; return; }
+      var correct = state.results.filter(function(r){ return r.ok; }).length;
+      cfg.accuracyEl.textContent = correct + ' correct out of ' + done + ' so far';
+      cfg.accuracyEl.classList.toggle('good', correct === done);
+    }
+
     function showTrial(){
       var s = state.trials[state.idx];
       cfg.stimEl.innerHTML = makeFaceHTML(s);
@@ -445,6 +457,7 @@
       var s = state.trials[state.idx];
       var ok = (i === MAP[s]);
       state.results.push({ rt: rt, ok: ok });
+      updateAccuracy();
       cfg.optEls.forEach(function(b){ b.disabled = true; });
       cfg.optEls[i].classList.add(ok ? 'correct' : 'wrong');
       if(!ok){ cfg.optEls[MAP[s]].classList.add('correct'); }
@@ -489,8 +502,9 @@
   var phase1Results = [];
 
   var learnTask = makeTask({
-    stimEl:    document.getElementById('learnStim'),
-    nameEl:    document.getElementById('learnName'),
+    stimEl:       document.getElementById('learnStim'),
+    nameEl:       document.getElementById('learnName'),
+    accuracyEl:   document.getElementById('learnAccuracy'),
     optEls:    Array.prototype.slice.call(document.querySelectorAll('#learnOpts .opt')),
     statusEl:  document.getElementById('learnStatus'),
     startBtn:  document.getElementById('learnStart'),
