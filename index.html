@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Before week 2 · Why the brain</title>
+<style>
+  :root{
+    --ink:#181A1F;
+    --paper:#F5F6F8;
+    --surface:#FFFFFF;
+    --muted:#6A6F7A;
+    --line:#E4E7EC;
+    --spark:#D8602F;
+    --spark-deep:#A8431C;
+    --grow:#14855F;
+    --grow-soft:#E7F3EE;
+    --hero:#14151E;
+    --font-display:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    --font-sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --maxw:640px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-sans);color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .stage{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;}
+  .beat{flex:1 1 auto;display:none;align-items:center;justify-content:center;padding:48px 24px 132px;}
+  .beat.is-active{display:flex;}
+  .wrap{width:100%;max-width:var(--maxw);margin:0 auto;}
+
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--spark-deep);font-weight:600;margin:0 0 22px;}
+  h1,h2{font-family:var(--font-display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0 0 20px;}
+  h1{font-size:clamp(30px,6vw,46px);}
+  h2{font-size:clamp(26px,5vw,38px);}
+  p{margin:0 0 18px;font-size:17px;}
+  .lede{font-size:19px;color:#33363D;}
+  .pull{font-family:var(--font-display);font-size:21px;line-height:1.4;border-left:3px solid var(--spark);padding-left:18px;margin:26px 0 0;color:var(--ink);}
+  .muted{color:var(--muted);}
+  .src-note{font-size:13px;color:var(--muted);margin-top:24px;}
+
+  .btn-primary,.btn-ghost{font-family:var(--font-sans);font-size:16px;font-weight:500;cursor:pointer;border-radius:10px;padding:12px 22px;transition:transform .15s ease,background .15s ease,border-color .15s ease;}
+  .btn-primary{background:var(--ink);color:#fff;border:1px solid var(--ink);}
+  .btn-primary:hover{transform:translateY(-1px);background:#000;}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn-ghost:hover{border-color:#C7CBD2;}
+  .btn-primary:disabled,.btn-ghost:disabled{opacity:.4;cursor:default;transform:none;}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--spark);outline-offset:2px;}
+
+  #beat0{background:var(--hero);color:#EDEEF2;padding-bottom:48px;}
+  #beat0 .eyebrow{color:#E29A6E;}
+  #beat0 h1{color:#fff;}
+  #beat0 .lede{color:#B9BDC8;}
+
+  .story-rule{height:1px;background:var(--line);border:0;margin:30px 0;}
+
+  .video-frame{position:relative;width:100%;aspect-ratio:16/9;background:#0E0F16;border-radius:16px;overflow:hidden;margin:6px 0 8px;}
+  .video-frame video{width:100%;height:100%;display:none;background:#000;}
+  .video-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#B9BDC8;text-align:center;padding:24px;}
+  .video-ph .play{width:62px;height:62px;border-radius:50%;border:2px solid #4A4D5C;display:flex;align-items:center;justify-content:center;}
+  .video-ph .play svg{width:24px;height:24px;margin-left:3px;}
+  .video-ph p{font-size:14px;margin:0;color:#9498A6;}
+  .video-cap{font-size:13px;color:var(--muted);margin:0 0 18px;}
+
+  .picks{display:flex;flex-direction:column;gap:10px;margin:8px 0 0;}
+  .pick{text-align:left;font-family:var(--font-sans);font-size:16px;padding:15px 18px;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:12px;color:var(--ink);transition:border-color .12s ease,background .12s ease;}
+  .pick:hover:not(:disabled){border-color:#C7CBD2;}
+  .pick:disabled{cursor:default;}
+  .pick.chosen{border-color:var(--ink);}
+  .pick.is-right{background:var(--grow-soft);border-color:var(--grow);color:var(--grow);}
+  .reveal{display:none;margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;}
+  .reveal.show{display:block;}
+  .reveal .pull{margin-top:14px;}
+
+  /* ---- Shared task styles ---- */
+  .stim-wrap{height:128px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:16px;}
+  .stim svg{width:74px;height:74px;color:var(--ink);}
+  .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+  .opt{font-family:var(--font-sans);font-size:20px;font-weight:500;padding:16px 0;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:12px;color:var(--ink);transition:background .12s ease,border-color .12s ease;}
+  .opt:hover:not(:disabled){border-color:#C7CBD2;}
+  .opt:disabled{cursor:default;}
+  .opt.correct{background:var(--grow-soft);border-color:var(--grow);color:var(--grow);}
+  .opt.wrong{background:#FBE9E4;border-color:var(--spark);color:var(--spark-deep);}
+  .task-status{font-size:14px;color:var(--muted);min-height:20px;margin:0 0 14px;}
+  .bars{display:flex;align-items:flex-end;gap:3px;height:64px;margin:8px 0 4px;}
+  .bar{flex:1;min-height:2px;background:var(--spark);border-radius:2px 2px 0 0;transition:height .2s ease;}
+  .bar.miss{background:#D9A38F;}
+  .bars-label{font-size:12px;color:var(--muted);margin:0 0 18px;}
+  .task-result{margin-top:18px;}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  .metric{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .metric .k{font-size:12px;color:var(--muted);margin:0 0 4px;}
+  .metric .v{font-size:24px;font-weight:600;font-family:var(--font-display);margin:0;}
+
+  /* ---- Learn-phase done banner ---- */
+  .learn-done{display:none;margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;}
+  .learn-done.show{display:block;}
+  .learn-done p{margin:0;}
+
+  /* ---- Recall reveal ---- */
+  .recall-reveal{display:none;margin-top:22px;}
+  .recall-reveal.show{display:block;}
+  .recall-reveal .pull{margin-top:0;}
+
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;}
+  .compare-cell{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .compare-cell .k{font-size:12px;color:var(--muted);margin:0 0 2px;}
+  .compare-cell .phase-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px;color:var(--spark-deep);}
+  .compare-cell .v{font-size:22px;font-weight:600;font-family:var(--font-display);margin:0;}
+  .compare-cell.highlight{border-color:var(--grow);background:var(--grow-soft);}
+  .compare-cell.highlight .v{color:var(--grow);}
+
+  .panel{background:var(--grow-soft);border:1px solid #CDE7DD;border-radius:16px;padding:22px 22px 14px;margin-top:24px;}
+  .panel p{font-size:16px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .chip{font-size:14px;background:var(--surface);border:1px solid #CDE7DD;color:var(--grow);border-radius:999px;padding:6px 13px;}
+
+  .reflect-input{width:100%;font-family:var(--font-sans);font-size:17px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+  .reflect-back{display:none;margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;}
+  .reflect-back.show{display:block;}
+  .reflect-back .echo{font-family:var(--font-display);font-size:21px;line-height:1.4;margin:0 0 14px;color:var(--ink);}
+  .reflect-back .echo b{color:var(--spark-deep);font-style:italic;font-weight:600;}
+  .signoff{margin-top:22px;font-family:var(--font-display);font-size:18px;color:var(--muted);}
+
+  .nav{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;background:rgba(245,246,248,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);}
+  .nav.hidden{display:none;}
+  .nav-hint{font-size:13px;color:var(--muted);display:none;}
+  .nav-hint.show{display:block;}
+  .dots{display:flex;gap:8px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:#CFD3DA;transition:background .2s ease,transform .2s ease;}
+  .dot.on{background:var(--spark);transform:scale(1.25);}
+  .nav-spacer{flex:1;}
+
+  @media (max-width:480px){
+    .beat{padding:36px 20px 128px;}
+    .metrics{grid-template-columns:1fr;}
+    .compare-grid{grid-template-columns:1fr;}
+    .opt{font-size:18px;padding:14px 0;}
+    .nav-hint{display:none!important;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+</style>
+</head>
+<body>
+<main class="stage">
+
+  <!-- BEAT 0 — COLD OPEN -->
+  <section class="beat is-active" id="beat0" aria-label="Cold open">
+    <div class="wrap">
+      <p class="eyebrow">Introduction to psychology 2 · before week 2</p>
+      <h1 tabindex="-1">The brain reading this sentence isn't the one you woke up with.</h1>
+      <p class="lede">Over the next eleven weeks you'll study how people see, remember, feel, and decide. All of it runs on something physical — and that something is quietly rewriting itself, right now, as you read. Give it twenty-five minutes before we begin.</p>
+      <p style="margin-top:30px;"><button class="btn-primary" id="begin">Begin</button></p>
+    </div>
+  </section>
+
+  <!-- BEAT 1 — THE STORY, TOLD (VIDEO) -->
+  <section class="beat" id="beat1" aria-label="A true story">
+    <div class="wrap">
+      <p class="eyebrow">01 · A true story</p>
+      <h2 tabindex="-1">What three years of streets does to a brain</h2>
+
+      <!-- ============================================================
+           YOUR VIDEO GOES HERE.
+           Record your introduction, name the file  taxi-story.mp4,
+           and drop it in the same folder as this page. It will appear
+           automatically (the placeholder below hides once it loads).
+           Add captions for accessibility, inside the <video> tag:
+             <track kind="captions" src="taxi-story.vtt" srclang="en" label="English" default>
+           Prefer YouTube/Vimeo? Replace the whole .video-frame block with:
+             <div class="video-frame"><iframe src="https://www.youtube.com/embed/XXXX"
+               style="width:100%;height:100%;border:0;" allowfullscreen></iframe></div>
+           ============================================================ -->
+      <div class="video-frame">
+        <video id="introVideo" controls playsinline preload="metadata">
+          <source src="taxi-story.mp4" type="video/mp4">
+        </video>
+        <div class="video-ph" id="videoPlaceholder">
+          <div class="play" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="#B9BDC8"><path d="M5 3.5v17l15-8.5z"/></svg>
+          </div>
+          <p>Your recorded introduction will play here</p>
+        </div>
+      </div>
+      <p class="video-cap">A few minutes, in your own voice — the story below, told the way you'd tell it.</p>
+
+      <p>To drive a black cab in London, you have to pass something called the Knowledge: roughly twenty-five thousand streets and thousands of landmarks, the whole tangled city held in your head, no satnav allowed. It takes most people three to four years, and over half never pass.</p>
+      <p>When researchers scanned qualified drivers' brains, a region tied to spatial memory — the posterior hippocampus — was measurably larger than in other people. The longer someone had driven, the larger it was. To rule out the idea that people with big hippocampi simply become drivers, the team followed trainees from their very first day: in the ones who eventually passed, that region grew over training. In the ones who didn't, it didn't.</p>
+      <hr class="story-rule">
+      <p class="pull">The streets didn't just go into their memory. They reshaped the tissue doing the remembering — measurably, not metaphorically.</p>
+    </div>
+  </section>
+
+  <!-- BEAT 2 — REVERSIBILITY (PREDICT / REVEAL) -->
+  <section class="beat" id="beat2" aria-label="The twist">
+    <div class="wrap">
+      <p class="eyebrow">02 · The twist</p>
+      <h2 tabindex="-1">Use it or lose it</h2>
+      <p>It's tempting to read that as a self-improvement story: work hard, grow your brain, keep the prize. But the researchers also looked at older drivers who had stopped — drivers who'd once held all of London in their heads, then retired.</p>
+      <p style="margin-bottom:14px;"><strong>What do you think they found?</strong></p>
+      <div class="picks" id="picks" role="group" aria-label="Predict the outcome">
+        <button class="pick" data-correct="0">The enlarged hippocampus stayed that way for life</button>
+        <button class="pick" data-correct="0">It kept growing — once changed, always changing</button>
+        <button class="pick" data-correct="1">It shrank back toward an ordinary size</button>
+      </div>
+      <div class="reveal" id="reveal">
+        <p style="margin-bottom:0;">The drivers who had stopped no longer showed the enlargement. Once the daily demand was gone, the region drifted back toward a typical size. The growth was never a permanent trophy — it was the brain tracking what those drivers actually did, day after day. Stop doing it, and the brain quietly reclaims the space.</p>
+        <p class="pull">This is the real lesson, and it's bigger than taxis: your brain doesn't reward effort once and bank it. It continuously follows your life — in both directions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 3 — LEARN (Phase 1) -->
+  <section class="beat" id="beat3" aria-label="Learn the pattern">
+    <div class="wrap">
+      <p class="eyebrow">03 · Learn it</p>
+      <h2 tabindex="-1">Figure out the pattern</h2>
+      <p>You're about to see four symbols, one at a time. Each symbol has exactly one correct button — 1, 2, 3, or 4. You won't be told which is which upfront: <strong>you'll work it out by trying</strong>. When you press the wrong button, the right one lights up green so you can learn from it.</p>
+      <p class="muted" style="font-size:15px;margin-bottom:20px;">Your only job: <strong>learn and remember</strong> all four pairings. We'll come back to them later.</p>
+
+      <div class="task" id="learnTask">
+        <div class="stim-wrap"><span class="stim" id="learnStim" aria-live="polite"></span></div>
+        <div class="opts" id="learnOpts" role="group" aria-label="Answer buttons">
+          <button class="opt" data-i="0" disabled>1</button>
+          <button class="opt" data-i="1" disabled>2</button>
+          <button class="opt" data-i="2" disabled>3</button>
+          <button class="opt" data-i="3" disabled>4</button>
+        </div>
+        <p class="task-status" id="learnStatus">Press start when you're ready.</p>
+        <p style="margin:0 0 8px;"><button class="btn-primary" id="learnStart">Start</button></p>
+        <div class="bars" id="learnBars" aria-hidden="true"></div>
+        <p class="bars-label" id="learnBarsLabel" style="visibility:hidden;">response time per trial — shorter is faster</p>
+      </div>
+
+      <div class="learn-done" id="learnDone">
+        <p>✓ &nbsp;Done. Keep those pairings in mind — we'll return to them in a moment.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 4 — REFRAME (consolidation gap) -->
+  <section class="beat" id="beat4" aria-label="The idea">
+    <div class="wrap">
+      <p class="eyebrow">04 · The idea</p>
+      <h2 tabindex="-1">Same machinery. No two alike.</h2>
+      <p>Every brain — yours, the taxi driver's, mine — runs on the same small set of universal parts and rules. That sameness is exactly why a brain can be studied at all: there are general principles to find. But run those same rules across one particular life — everything you've practised, feared, loved, repeated, and then stopped — and they build a brain that exists nowhere else.</p>
+      <p>Sameness of mechanism is what <em>makes room</em> for uniqueness. The rules are shared; what they're shaped into is yours, and it keeps changing.</p>
+      <div class="panel">
+        <p style="margin-bottom:10px;">And that's why a psychologist studies the brain at all. Nearly everything on this term's syllabus is the same machinery, shaped by experience:</p>
+        <div class="chips" id="chips"></div>
+        <p style="margin:14px 0 6px;" class="muted">Different chapters. One organ.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 5 — RECALL (Phase 2) -->
+  <section class="beat" id="beat5" aria-label="Did it stick?">
+    <div class="wrap">
+      <p class="eyebrow">05 · Did it stick?</p>
+      <h2 tabindex="-1">One more thing before we finish.</h2>
+      <p>A few minutes ago you saw four symbols you'd never seen before. Let's find out what your brain did with them while you were reading.</p>
+
+      <div class="task" id="recallTask">
+        <div class="stim-wrap"><span class="stim" id="recallStim" aria-live="polite"></span></div>
+        <div class="opts" id="recallOpts" role="group" aria-label="Answer buttons">
+          <button class="opt" data-i="0" disabled>1</button>
+          <button class="opt" data-i="1" disabled>2</button>
+          <button class="opt" data-i="2" disabled>3</button>
+          <button class="opt" data-i="3" disabled>4</button>
+        </div>
+        <p class="task-status" id="recallStatus">Press start when you're ready.</p>
+        <p style="margin:0 0 8px;"><button class="btn-primary" id="recallStart">Start</button></p>
+        <div class="bars" id="recallBars" aria-hidden="true"></div>
+        <p class="bars-label" id="recallBarsLabel" style="visibility:hidden;">response time per trial</p>
+      </div>
+
+      <div class="recall-reveal" id="recallReveal" aria-live="polite">
+        <div id="recallStats"></div>
+        <p class="pull" style="margin-bottom:20px;">A few minutes ago those four pairings were random noise. Now — without anyone telling you the answers — you just knew. Your brain rewrote itself while you were reading about something else. That is not a metaphor. That is what this course is about.</p>
+        <p style="margin:0;" class="muted" style="font-size:15px;">This is the taxi drivers' three years, compressed into ten minutes. And just like theirs, it will quietly fade if you never revisit it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 6 — REFLECT + HANDOFF -->
+  <section class="beat" id="beat6" aria-label="Take it to class">
+    <div class="wrap">
+      <p class="eyebrow">06 · Take it to class</p>
+      <h2 tabindex="-1">One thing you can do now</h2>
+      <p>Name something you can do now that you couldn't a few years ago — a skill, a habit, a fear you grew out of. Keep it to a word or a short phrase.</p>
+      <label for="reflect" class="muted" style="display:block;font-size:14px;margin-bottom:8px;">Your answer stays on your screen. Nothing is sent or saved.</label>
+      <input class="reflect-input" id="reflect" type="text" maxlength="60" placeholder="e.g. ride a bike, speak in public, read music…" autocomplete="off">
+      <p style="margin:0;"><button class="btn-primary" id="reflectSave">Save my answer</button></p>
+      <div class="reflect-back" id="reflectBack">
+        <p class="echo">"<b id="echoText"></b>" — that's a place your brain rewrote itself.</p>
+        <p style="margin:0;">Bring it to the first lecture. We'll put the whole room's answers on screen at once, and you'll see the idea you just met made real: one shared machinery, a roomful of different lives.</p>
+        <p class="signoff">See you in week 2.</p>
+      </div>
+      <p class="src-note">Sources, for the curious: Maguire et al. (2000) and Woollett &amp; Maguire (2011) on the growth; Woollett, Spiers &amp; Maguire (2009) on its reversal after drivers stopped.</p>
+    </div>
+  </section>
+
+  <!-- NAV -->
+  <div class="nav hidden" id="nav">
+    <button class="btn-ghost" id="back">Back</button>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <div class="nav-spacer"></div>
+    <span class="nav-hint" id="navHint">Complete the task to continue</span>
+    <button class="btn-primary" id="next">Next</button>
+  </div>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- Navigation ---- */
+  var beats = Array.prototype.slice.call(document.querySelectorAll('.beat'));
+  var nav = document.getElementById('nav');
+  var dotsWrap = document.getElementById('dots');
+  var backBtn = document.getElementById('back');
+  var nextBtn = document.getElementById('next');
+  var navHint = document.getElementById('navHint');
+  var current = 0;
+  var LEARN_BEAT = 3;
+  var RECALL_BEAT = 5;
+  var learnDone = false;
+  var recallDone = false;
+
+  beats.forEach(function(_,i){
+    var d = document.createElement('span');
+    d.className = 'dot' + (i ? '' : ' on');
+    dotsWrap.appendChild(d);
+  });
+  var dots = Array.prototype.slice.call(dotsWrap.children);
+
+  function refreshGate(){
+    var gated = (current === LEARN_BEAT && !learnDone) ||
+                (current === RECALL_BEAT && !recallDone);
+    nextBtn.disabled = gated;
+    navHint.classList.toggle('show', gated);
+  }
+
+  function show(i){
+    if(i < 0 || i >= beats.length) return;
+    beats[current].classList.remove('is-active');
+    beats[i].classList.add('is-active');
+    current = i;
+    dots.forEach(function(d,k){ d.classList.toggle('on', k === i); });
+    nav.classList.toggle('hidden', i === 0);
+    backBtn.disabled = (i <= 1);
+    nextBtn.style.visibility = (i === beats.length - 1) ? 'hidden' : 'visible';
+    refreshGate();
+    window.scrollTo(0, 0);
+    var h = beats[i].querySelector('[tabindex="-1"]');
+    if(h){ h.focus({preventScroll: true}); }
+  }
+
+  document.getElementById('begin').addEventListener('click', function(){ show(1); });
+  backBtn.addEventListener('click', function(){ show(current - 1); });
+  nextBtn.addEventListener('click', function(){ if(!nextBtn.disabled){ show(current + 1); } });
+
+  /* ---- Video ---- */
+  var introVideo = document.getElementById('introVideo');
+  var videoPh = document.getElementById('videoPlaceholder');
+  function revealVideo(){ introVideo.style.display = 'block'; videoPh.style.display = 'none'; }
+  introVideo.addEventListener('loadedmetadata', revealVideo);
+  introVideo.addEventListener('loadeddata', revealVideo);
+
+  /* ---- Course chips ---- */
+  var topics = ['perception','attention','memory','emotion','learning','decision-making',
+                'language','stress','sleep','development','individual differences','mental health'];
+  var chipsEl = document.getElementById('chips');
+  topics.forEach(function(t){
+    var c = document.createElement('span'); c.className = 'chip'; c.textContent = t; chipsEl.appendChild(c);
+  });
+
+  /* ---- Predict / reveal ---- */
+  var picks = Array.prototype.slice.call(document.querySelectorAll('.pick'));
+  var reveal = document.getElementById('reveal');
+  var picked = false;
+  picks.forEach(function(b){
+    b.addEventListener('click', function(){
+      if(picked) return; picked = true;
+      b.classList.add('chosen');
+      picks.forEach(function(x){
+        x.disabled = true;
+        if(x.getAttribute('data-correct') === '1'){ x.classList.add('is-right'); }
+      });
+      reveal.classList.add('show');
+    });
+  });
+
+  /* ---- Shared task logic ---- */
+  /* Symbol SVGs and the correct mapping (symbol index → button index) */
+  var SYM = {
+    0:'<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7"><circle cx="50" cy="50" r="34"/></svg>',
+    1:'<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><rect x="20" y="20" width="60" height="60" rx="4"/></svg>',
+    2:'<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><polygon points="50,18 82,78 18,78"/></svg>',
+    3:'<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><polygon points="50,16 84,50 50,84 16,50"/></svg>'
+  };
+  var MAP = {0:2, 1:0, 2:3, 3:1}; /* symbol → correct button index */
+
+  function shuffle(arr){
+    for(var i = arr.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+  function avg(arr){ var s = 0; for(var i = 0; i < arr.length; i++){ s += arr[i]; } return s / arr.length; }
+
+  function buildTrials(reps){
+    var t = [];
+    for(var s = 0; s < 4; s++){ for(var r = 0; r < reps; r++){ t.push(s); } }
+    return shuffle(t);
+  }
+
+  function makeTask(cfg){
+    /* cfg: { stimEl, optEls, statusEl, startBtn, barsEl, barsLabel,
+               reps, onFinish, running, trials, idx, results } */
+    var state = { running: false, trials: [], idx: 0, results: [], t0: 0 };
+    var MAXRT = 2000;
+
+    function showTrial(){
+      var s = state.trials[state.idx];
+      cfg.stimEl.innerHTML = SYM[s];
+      cfg.optEls.forEach(function(b){ b.disabled = false; b.className = 'opt'; });
+      cfg.statusEl.textContent = 'Trial ' + (state.idx + 1) + ' of ' + state.trials.length;
+      state.t0 = performance.now();
+    }
+
+    function answer(i){
+      if(!state.running) return;
+      var rt = performance.now() - state.t0;
+      var s = state.trials[state.idx];
+      var ok = (i === MAP[s]);
+      state.results.push({ rt: rt, ok: ok });
+      cfg.optEls.forEach(function(b){ b.disabled = true; });
+      cfg.optEls[i].classList.add(ok ? 'correct' : 'wrong');
+      if(!ok){ cfg.optEls[MAP[s]].classList.add('correct'); }
+      var bar = document.createElement('div');
+      bar.className = 'bar' + (ok ? '' : ' miss');
+      bar.style.height = Math.max(2, Math.min(64, (rt / MAXRT) * 64)) + 'px';
+      cfg.barsEl.appendChild(bar);
+      state.idx++;
+      setTimeout(function(){
+        if(state.idx < state.trials.length){ showTrial(); } else { finish(); }
+      }, 520);
+    }
+
+    function finish(){
+      state.running = false;
+      cfg.stimEl.innerHTML = '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><polyline points="26,52 44,70 76,32"/></svg>';
+      cfg.statusEl.textContent = 'Done.';
+      cfg.onFinish(state.results);
+    }
+
+    cfg.startBtn.addEventListener('click', function(){
+      state.idx = 0; state.results = [];
+      cfg.barsEl.innerHTML = '';
+      cfg.barsLabel.style.visibility = 'visible';
+      cfg.startBtn.style.display = 'none';
+      state.running = true;
+      state.trials = buildTrials(cfg.reps);
+      showTrial();
+    });
+
+    cfg.optEls.forEach(function(b){
+      b.addEventListener('click', function(){ answer(parseInt(b.getAttribute('data-i'), 10)); });
+    });
+
+    return { getKeyHandler: function(){ return function(e){
+      if(!state.running) return;
+      if(e.key >= '1' && e.key <= '4'){ answer(parseInt(e.key, 10) - 1); }
+    }; } };
+  }
+
+  /* ---- Phase 1: LEARN ---- */
+  var phase1Results = [];
+
+  var learnTask = makeTask({
+    stimEl:    document.getElementById('learnStim'),
+    optEls:    Array.prototype.slice.call(document.querySelectorAll('#learnOpts .opt')),
+    statusEl:  document.getElementById('learnStatus'),
+    startBtn:  document.getElementById('learnStart'),
+    barsEl:    document.getElementById('learnBars'),
+    barsLabel: document.getElementById('learnBarsLabel'),
+    reps: 6, /* 24 trials — enough for almost everyone to consolidate */
+    onFinish: function(results){
+      phase1Results = results;
+      document.getElementById('learnDone').classList.add('show');
+      learnDone = true;
+      refreshGate();
+    }
+  });
+  var learnKeyHandler = learnTask.getKeyHandler();
+
+  /* ---- Phase 2: RECALL ---- */
+  var recallTask = makeTask({
+    stimEl:    document.getElementById('recallStim'),
+    optEls:    Array.prototype.slice.call(document.querySelectorAll('#recallOpts .opt')),
+    statusEl:  document.getElementById('recallStatus'),
+    startBtn:  document.getElementById('recallStart'),
+    barsEl:    document.getElementById('recallBars'),
+    barsLabel: document.getElementById('recallBarsLabel'),
+    reps: 2, /* 8 trials — short, clean comparison */
+    onFinish: function(results){
+      /* Build comparison stats */
+      /* Phase 1: use the last 8 trials (once mostly learned) */
+      var p1Slice = phase1Results.slice(-8);
+      var p1AvgRt = Math.round(avg(p1Slice.map(function(r){ return r.rt; })));
+      var p1Acc   = Math.round(avg(p1Slice.map(function(r){ return r.ok ? 1 : 0; })) * 100);
+      /* Phase 2: all trials */
+      var p2AvgRt = Math.round(avg(results.map(function(r){ return r.rt; })));
+      var p2Acc   = Math.round(avg(results.map(function(r){ return r.ok ? 1 : 0; })) * 100);
+      var fasterPct = Math.max(0, Math.round((1 - p2AvgRt / p1AvgRt) * 100));
+
+      var statsEl = document.getElementById('recallStats');
+      statsEl.innerHTML =
+        '<div class="compare-grid">'
+        + '<div class="compare-cell"><p class="phase-label">End of learning</p><p class="k">Avg response time</p><p class="v">' + p1AvgRt + ' ms</p></div>'
+        + '<div class="compare-cell highlight"><p class="phase-label">After a break</p><p class="k">Avg response time</p><p class="v">' + p2AvgRt + ' ms</p></div>'
+        + '<div class="compare-cell"><p class="phase-label">End of learning</p><p class="k">Accuracy</p><p class="v">' + p1Acc + '%</p></div>'
+        + '<div class="compare-cell highlight"><p class="phase-label">After a break</p><p class="k">Accuracy</p><p class="v">' + p2Acc + '%</p></div>'
+        + '</div>'
+        + (fasterPct > 0
+            ? '<p style="font-size:15px;margin-bottom:0;" class="muted">You were <strong>' + fasterPct + '% faster</strong> from the very first trial of the recall round — before you had time to re-learn anything.</p>'
+            : '<p style="font-size:15px;margin-bottom:0;" class="muted">Your speed and accuracy held steady across the gap — the learning carried over.</p>');
+
+      document.getElementById('recallReveal').classList.add('show');
+      recallDone = true;
+      refreshGate();
+    }
+  });
+  var recallKeyHandler = recallTask.getKeyHandler();
+
+  /* Route keyboard to whichever task is active */
+  document.addEventListener('keydown', function(e){
+    if(current === LEARN_BEAT)  { learnKeyHandler(e); }
+    if(current === RECALL_BEAT) { recallKeyHandler(e); }
+  });
+
+  /* ---- Reflection ---- */
+  var reflectInput = document.getElementById('reflect');
+  var reflectSave  = document.getElementById('reflectSave');
+  var reflectBack  = document.getElementById('reflectBack');
+  var echoText     = document.getElementById('echoText');
+
+  function saveReflection(){
+    var v = reflectInput.value.trim();
+    if(!v){ reflectInput.focus(); return; }
+    echoText.textContent = v;
+    reflectBack.classList.add('show');
+    reflectSave.textContent = 'Saved';
+    /* Persist across page reloads / devices via localStorage */
+    try { localStorage.setItem('psyc122_reflect', v); } catch(e){}
+  }
+  /* Pre-fill if student already saved on another device */
+  try {
+    var saved = localStorage.getItem('psyc122_reflect');
+    if(saved){ reflectInput.value = saved; }
+  } catch(e){}
+
+  reflectSave.addEventListener('click', saveReflection);
+  reflectInput.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ saveReflection(); } });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

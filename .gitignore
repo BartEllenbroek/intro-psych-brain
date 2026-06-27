@@ -1,0 +1,14 @@
+# Office temp files
+~$*
+*.tmp
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# macOS
+.DS_Store
+
+# Excel course planning files (not for students)
+*.xlsx
+*.xls
